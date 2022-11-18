@@ -4,4 +4,4 @@ You will find examples to how can use cloudformation to provision your infrastru
 
 Examples:
 
-- Build ALB with autoscaling based on your CPU usage [ALB](./ELB-Example/README.md)
+- Build ALB with autoscaling based on CPU usage [ALB](./ELB-Example/README.md)
