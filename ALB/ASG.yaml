@@ -1,0 +1,54 @@
+Parameters:
+  LaunchConfigName:
+    Description: Launch Configuration Name 
+    Type: String
+  ElasticLoadBalancerName:
+    Description: ElasticLoad Balancer Name
+    Type: String
+
+Resources:
+  WebServerGroup:
+      Type: AWS::AutoScaling::AutoScalingGroup
+      Properties:
+        AvailabilityZones: !GetAZs ''
+        LaunchConfigurationName: !Ref 'LaunchConfigName'
+        MinSize: '1'
+        MaxSize: '3'
+        LoadBalancerNames: [!Ref 'ElasticLoadBalancerName']
+      CreationPolicy:
+        ResourceSignal:
+          Timeout: PT15M
+          Count: 1
+      UpdatePolicy:
+        AutoScalingRollingUpdate:
+          MinInstancesInService: 1
+          MaxBatchSize: 1
+          PauseTime: PT15M
+          WaitOnResourceSignals: true
+
+  WebServerScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName: !Ref 'WebServerGroup'
+      Cooldown: '60'
+      ScalingAdjustment: 1
+
+  WebServerScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName: !Ref 'WebServerGroup'
+      Cooldown: '60'
+      ScalingAdjustment: -1
+
+Outputs:
+  WebServerScaleDownPolicyAction:
+    Description: Scale down policy
+    Value: !Ref WebServerScaleDownPolicy
+  WebServerScaleUpPolicyAction:
+    Description: Scale up policy
+    Value: !Ref WebServerScaleUpPolicy
+  WebServerGroupRef:
+    Description: Autoscaling group
+    Value: !Ref WebServerGroup

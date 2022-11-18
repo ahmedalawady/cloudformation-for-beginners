@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation Sample Template'
+Parameters:
+  BucketURLParam:
+    Type: String
+    Description: Course bucket path
+  KeyName:
+    Type: String
+    Description: Course bucket path
+Resources:
+  LBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        KeyName: !Ref KeyName
+      TemplateURL: !Sub ${BucketURLParam}/LB.yaml
+      
+  ASGStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        ElasticLoadBalancerName: !GetAtt LBStack.Outputs.LBName
+        LaunchConfigName: !GetAtt LBStack.Outputs.LaunchConfigName
+      TemplateURL: !Sub ${BucketURLParam}/ASG.yaml
+
+  AlarmsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        WebServerScaleUpPolicy: !GetAtt ASGStack.Outputs.WebServerScaleUpPolicyAction
+        WebServerScaleDownPolicy: !GetAtt ASGStack.Outputs.WebServerScaleDownPolicyAction
+        WebServerGroup: !GetAtt ASGStack.Outputs.WebServerGroupRef
+      TemplateURL: !Sub ${BucketURLParam}/CloudwatchAlarms.yaml
